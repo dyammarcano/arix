@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/choria-io/fisk"
+	"github.com/dyammarcano/arix/internal/version"
 	"os"
 )
 
@@ -15,5 +16,5 @@ See 'arix cheat' for a quick reference to the commands available.`
 	arix := fisk.New("arix", help)
 	arix.Author("Arix Authors <dyam.marcano@gmail.com>")
 	arix.UsageWriter(os.Stdout)
-	arix.Version("0.0.1")
+	arix.Version(version.G().Version)
 }

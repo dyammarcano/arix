@@ -2,7 +2,7 @@
 
 //go:generate go run generate.go
 
-package generate
+package main
 
 import (
 	"encoding/json"
@@ -39,17 +39,16 @@ import (
 	"strings"
 )
 
-var i *Info
+var info *Info
 
 type Info struct {
 	Version    string   ` + "`json:\"version\"`" + `
 	CommitHash string   ` + "`json:\"commitHash\"`" + `
 	Date       string   ` + "`json:\"date\"`" + `
-	Features   []string ` + "`json:\"features,omitempty\"`" + `
 }
 
 func init() {
-	i = &Info{
+	info = &Info{
 		Version:    "{{.Version}}",
 		CommitHash: "{{.CommitHash}}",
 		Date:       "{{.Date}}",
@@ -59,32 +58,22 @@ func init() {
 
 // G returns the Info struct
 func G() *Info {
-	return i
-}
-
-// AddFeature adds a feature description
-func AddFeature(feature string) {
-	i.Features = append(i.Features, fmt.Sprintf("+%s", feature))
+	return info
 }
 
 // GetVersionInfo returns the info
 func GetVersionInfo() string {
 	var sb strings.Builder
-	sb.WriteString(i.Version)
+	sb.WriteString(info.Version)
 
-	if i.CommitHash != "" {
+	if info.CommitHash != "" {
 		sb.WriteString("-")
-		sb.WriteString(i.CommitHash)
+		sb.WriteString(info.CommitHash)
 	}
 
-	if i.Date != "" {
+	if info.Date != "" {
 		sb.WriteString("-")
-		sb.WriteString(i.Date[:10]) // format date to yyyy-mm-dd
-	}
-
-	if len(i.Features) > 0 {
-		sb.WriteString(" ")
-		sb.WriteString(strings.Join(i.Features, " "))
+		sb.WriteString(info.Date[:10]) // format date to yyyy-mm-dd
 	}
 
 	return sb.String()
