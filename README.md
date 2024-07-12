@@ -19,6 +19,7 @@ This tool is meant to be used for development purposes. It is a simple tool that
 - [x] Go vulncheck
 - [x] GolangCI-Lint
 - [x] Go coverage
+- [x] Bump version
 
 
 ## How to use
