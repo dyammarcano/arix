@@ -1,4 +1,4 @@
-# Nomad (dev purpose)
+# Arix (dev purpose)
 
 ## Description
 
