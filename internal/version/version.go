@@ -3,6 +3,7 @@
 package version
 
 import (
+	"runtime/debug"
 	"strings"
 )
 
@@ -12,13 +13,20 @@ type Info struct {
 	Version    string `json:"version"`
 	CommitHash string `json:"commitHash"`
 	Date       string `json:"date"`
+	GoVersion  string `json:"goVersion"`
 }
 
 func init() {
+	nfo, ok := debug.ReadBuildInfo()
+	if !ok || (nfo != nil && nfo.Main.Version == "") {
+		return
+	}
+
 	info = &Info{
 		Version:    "v0.0.0",
-		CommitHash: "9bd0dcc13de29e90b1467d312a881f43aaf8771d",
-		Date:       "2024-07-12T20:26:38Z",
+		CommitHash: "b8febb33e0859cc6526a5f9e95e4253baff56e0f",
+		Date:       "2024-07-12T20:33:20Z",
+		GoVersion:  nfo.Main.Version,
 	}
 }
 

@@ -15,6 +15,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime/debug"
 	"strings"
 	"text/template"
 )
@@ -35,7 +36,7 @@ const (
 package version
 
 import (
-	"fmt"
+	"runtime/debug"
 	"strings"
 )
 
@@ -45,14 +46,20 @@ type Info struct {
 	Version    string   ` + "`json:\"version\"`" + `
 	CommitHash string   ` + "`json:\"commitHash\"`" + `
 	Date       string   ` + "`json:\"date\"`" + `
+	GoVersion  string   ` + "`json:\"goVersion\"`" + `
 }
 
 func init() {
+	nfo, ok := debug.ReadBuildInfo()
+	if !ok || (nfo != nil && nfo.Main.Version == "") {
+		return
+	}
+
 	info = &Info{
 		Version:    "{{.Version}}",
 		CommitHash: "{{.CommitHash}}",
 		Date:       "{{.Date}}",
-		Features:   []string{},
+        GoVersion:  nfo.Main.Version,
 	}
 }
 
@@ -83,10 +90,10 @@ func GetVersionInfo() string {
 
 type (
 	Version struct {
-		Version    string   `json:"version"`
-		CommitHash string   `json:"commitHash"`
-		Date       string   `json:"date"`
-		Features   []string `json:"features,omitempty"`
+		Version    string `json:"version"`
+		CommitHash string `json:"commitHash"`
+		Date       string `json:"date"`
+		GoVersion  string `json:"goVersion,omitempty"`
 	}
 
 	Generator struct {
@@ -147,8 +154,8 @@ func (g *Generator) Generate() error {
 	destPath := filepath.Join(g.projectPath, "internal", "version")
 
 	// create folder if not exists
-	if _, err := fs.Stat(destPath); os.IsNotExist(err) {
-		if err = fs.MkdirAll(destPath, os.ModePerm); err != nil {
+	if _, err := afs.Stat(destPath); os.IsNotExist(err) {
+		if err = afs.MkdirAll(destPath, os.ModePerm); err != nil {
 			return err
 		}
 	}
@@ -157,7 +164,7 @@ func (g *Generator) Generate() error {
 
 	log.Infof("generating go file: %s", versionFile)
 
-	file, err := fs.Create(versionFile)
+	file, err := afs.Create(versionFile)
 	if err != nil {
 		return err
 	}
@@ -219,7 +226,7 @@ func (g *Generator) getTag() (string, error) {
 // genTxt creates a VERSION file with the version information
 func (g *Generator) genTxt(ver *Version) error {
 	txtFile := filepath.Join(g.projectPath, txtName)
-	file, err := fs.Create(txtFile)
+	file, err := afs.Create(txtFile)
 	if err != nil {
 		return fmt.Errorf("error creating file: %w", err)
 	}
@@ -230,6 +237,11 @@ func (g *Generator) genTxt(ver *Version) error {
 	}(file)
 
 	log.Infof("generating version file: %s", txtFile)
+
+	nfo, ok := debug.ReadBuildInfo()
+	if ok && (nfo != nil) {
+		ver.GoVersion = nfo.Main.Version
+	}
 
 	if err = json.NewEncoder(file).Encode(ver); err != nil {
 		return fmt.Errorf("error encoding json: %w", err)
